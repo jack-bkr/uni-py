@@ -1,0 +1,20 @@
+can only sell whole rolls 
+only one extra can be used 
+
+Lining paper same width as wallpaper, but 20m long
+
+Double Paste if lining paper used
+
+Wallpaper Paste: 10kg tub will cover 53m^2
+
+Paper:
+    cheap paper: 0.3p per cm^2
+    expensive paper: 0.6p per cm^2
+
+Extras:
+    foil: 12p per m
+    glitter: 18p per m
+    Embossing: 6p per m
+
+Lining Paper: £7.63 per roll
+Wallpaper Paste: £13.99 per tub
