@@ -5,14 +5,52 @@ class Wallpaper:
     def __init__(self, pattern, colour, length, extras, premium, lining, paste):
         self.pattern = pattern
         self.colour = colour
-        self.length = length
+        self.length = float(length)
         self.extra = extras
         self.premium = premium
         self.lining = lining
         self.paste = paste
+        self.rolls = 0
+        self.lRolls = 0
+        self.area = 0
+        self.tubs = 0
+        
+    def calculate(self):
+        price = 0
+        self.rolls = (float(self.length) // 10.05) + 1  # calculate number of rolls needed
+        self.lRolls = (float(self.length) // 20) + 1  # calculate number of lining rolls needed
+        self.area = self.rolls * 10.05 * 0.52    # calculate area of wallpaper needed
+        self.tubs = (self.area // 53) + 1    # calculate number of tubs of paste needed
+        
+        if (self.extra == 'None'):  # calculate price of extras
+            extras = 0
+        elif(self.extra == 'Foil'):
+            extras = 0.12 * self.rolls * 10.05
+        elif(self.extra == 'Glitter'):
+            extras = 0.18 * self.rolls * 10.05
+        elif(self.extra == 'Embossing'):
+            extras = 0.06 * self.rolls * 10.05
+        
+        paper = 0.003 * self.rolls * 52260    # calculate price of paper
+        if(self.premium):    # calculate price of premium paper
+            paper = 0.006 * self.rolls * 52260
+        
+        lining = 0
+        if(self.lining):    # calculate price of lining
+            lining = 7.63 * self.lRolls
+            self.tubs = 2 * self.tubs
+            
+        paste = 0
+        if(self.paste): # calculate price of paste
+            paste = self.tubs * 13.99
+        
+        price = extras + paper + lining + paste # calculate total price
+        
+        return price
+            
 
 
-colours = ['gold','lightSeaGreen',  'darkSlateGray4', 'deepSkyBlue', 'purple', 'violetRed2']
+colours = ['gold', 'lightSeaGreen',  'darkSlateGray4', 'deepSkyBlue', 'purple', 'violetRed2']
 
 # init GUI
 root = tk.Tk()
@@ -82,7 +120,7 @@ def createWallpaperPreview():
         
 # Create Options
 def createOptions():
-    global premium, lining, paste
+    global premium, lining, paste, lblPrice
     premium = tk.IntVar()
     lining = tk.IntVar()
     paste = tk.IntVar()
@@ -125,6 +163,19 @@ def createOptions():
     chkPaste = tk.Checkbutton(frame, name='paste', variable=paste)  # create checkbox for paste
     chkPaste.grid(row=4, column=1, padx=10, pady=1)
     chkPaste.bind("<Button>", optChange)
+    
+    btnCalculate = tk.Button(frame, text='Calculate', command=calculate)    # create button for calculate
+    btnCalculate.grid(row=5, column=0, padx=10, pady=1)
+    
+    lblTotal = tk.Label(frame, text='Total:')   # create label for total
+    lblTotal.grid(row=6, column=0, padx=10, pady=1)
+    
+    lblPrice = tk.Label(frame, text='£0.00') # create label for price
+    lblPrice.grid(row=6, column=1, padx=10, pady=1)
+
+# Calculate Wallpaper Price
+def calculate():
+    lblPrice.config(text='£' + str(wallpaper.calculate()))    # set price label to price
 
 # Options Change Event handler
 
