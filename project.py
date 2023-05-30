@@ -31,7 +31,6 @@ class Wallpaper:
             extras = 0.18 * self.rolls * 10.05
         elif(self.extras == 'Embossing'):
             extras = 0.06 * self.rolls * 10.05
-        extras = round(extras, 2)
         
         paper = 0.003 * self.rolls * 52260    # calculate price of paper
         if(self.premium):    # calculate price of premium paper
@@ -48,7 +47,7 @@ class Wallpaper:
         
         self.price = extras + paper + lining + paste # calculate total price
         
-        return self.price
+        return round(self.price, 2) # return total price rounded to 2 decimal places
             
 
 colours = ['gold', 'lightSeaGreen',  'darkSlateGray4', 'deepSkyBlue', 'purple', 'violetRed2']
@@ -122,7 +121,7 @@ def createWallpaperPreview(id):
         
 # Create Options
 def createOptions():
-    global premium, lining, paste, lblPrice, cmbOrders
+    global premium, lining, paste, lblPrice, cmbOrders, entryLength, cmbExtras, chkPremium, chkLining, chkPaste
     premium = tk.IntVar()
     lining = tk.IntVar()
     paste = tk.IntVar()
@@ -192,19 +191,48 @@ def calculate():
 
 def addOrder():
     global orderID
-    order.append(Wallpaper('pattern 1', 'gold', 10, 'None', False, False, False))
-    orderID = order[len(order) - 1].orderID
+    order.append(Wallpaper('pattern 1', 'gold', 0, 'None', False, False, False))
+    orderID = len(order) - 1
     orders = []
     for i in range(len(order)):
         orders.append(i+1)
     cmbOrders.config(values=orders)
     cmbOrders.current(orderID)
     createWallpaperPreview(orderID)
+    
+    entryLength.delete(0, 'end')
+    entryLength.insert(0, order[orderID].length)
+    
+    if(order[orderID].extras == 'None'):
+        cmbExtras.current(0)
+    elif(order[orderID].extras == 'Foil'):
+        cmbExtras.current(1)
+    elif(order[orderID].extras == 'Glitter'):
+        cmbExtras.current(2)
+    elif(order[orderID].extras == 'Embossing'):
+        cmbExtras.current(3)
+        
+    if(order[orderID].premium):
+        chkPremium.select()
+    else:
+        chkPremium.deselect()
+            
+    if(order[orderID].lining):
+        chkLining.select()
+    else:
+        chkLining.deselect()
+    
+    if(order[orderID].paste):
+        chkPaste.select()
+    else:
+        chkPaste.deselect()
+        
+    calculate()
 
 # Options Change Event handler
 
 def optChange(event):
-    global orderID
+    global orderID, entryLength, cmbExtras, chkPremium, chkLining, chkPaste
     if(event.widget._name == 'length'):
         order[orderID].length = event.widget.get()   # get length from entry
         print(order[orderID].length)
@@ -238,6 +266,33 @@ def optChange(event):
         print("order: " + event.widget.get())
         orderID = int(event.widget.get()) - 1
         createWallpaperPreview(orderID)
+        
+        entryLength.delete(0, 'end')
+        entryLength.insert(0, order[orderID].length)
+        
+        if(order[orderID].extras == 'None'):
+            cmbExtras.current(0)
+        elif(order[orderID].extras == 'Foil'):
+            cmbExtras.current(1)
+        elif(order[orderID].extras == 'Glitter'):
+            cmbExtras.current(2)
+        elif(order[orderID].extras == 'Embossing'):
+            cmbExtras.current(3)
+    
+        if(order[orderID].premium):
+            chkPremium.select()
+        else:
+            chkPremium.deselect()
+            
+        if(order[orderID].lining):
+            chkLining.select()
+        else:
+            chkLining.deselect()
+        
+        if(order[orderID].paste):
+            chkPaste.select()
+        else:
+            chkPaste.deselect()
 
 # Pattern Click Event handler    
 def patClick(event):
