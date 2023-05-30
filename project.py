@@ -6,7 +6,7 @@ class Wallpaper:
         self.pattern = pattern
         self.colour = colour
         self.length = float(length)
-        self.extra = extras
+        self.extras = extras
         self.premium = premium
         self.lining = lining
         self.paste = paste
@@ -14,22 +14,24 @@ class Wallpaper:
         self.lRolls = 0
         self.area = 0
         self.tubs = 0
+        self.price = 0
         
     def calculate(self):
-        price = 0
-        self.rolls = (float(self.length) // 10.05) + 1  # calculate number of rolls needed
-        self.lRolls = (float(self.length) // 20) + 1  # calculate number of lining rolls needed
-        self.area = self.rolls * 10.05 * 0.52    # calculate area of wallpaper needed
+        self.price = 0
+        self.rolls = (float(self.length) // 10.05001) + 1  # calculate number of rolls needed
+        self.lRolls = (float(self.length) // 20.00001) + 1  # calculate number of lining rolls needed
+        self.area = self.rolls * 10.05 * 0.52    # calculate area of order[orderID] needed
         self.tubs = (self.area // 53) + 1    # calculate number of tubs of paste needed
         
-        if (self.extra == 'None'):  # calculate price of extras
+        if (self.extras == 'None'):  # calculate price of extras
             extras = 0
-        elif(self.extra == 'Foil'):
+        elif(self.extras == 'Foil'):
             extras = 0.12 * self.rolls * 10.05
-        elif(self.extra == 'Glitter'):
+        elif(self.extras == 'Glitter'):
             extras = 0.18 * self.rolls * 10.05
-        elif(self.extra == 'Embossing'):
+        elif(self.extras == 'Embossing'):
             extras = 0.06 * self.rolls * 10.05
+        extras = round(extras, 2)
         
         paper = 0.003 * self.rolls * 52260    # calculate price of paper
         if(self.premium):    # calculate price of premium paper
@@ -44,11 +46,10 @@ class Wallpaper:
         if(self.paste): # calculate price of paste
             paste = self.tubs * 13.99
         
-        price = extras + paper + lining + paste # calculate total price
+        self.price = extras + paper + lining + paste # calculate total price
         
-        return price
+        return self.price
             
-
 
 colours = ['gold', 'lightSeaGreen',  'darkSlateGray4', 'deepSkyBlue', 'purple', 'violetRed2']
 
@@ -111,16 +112,17 @@ def createColourPicker():
         colour.bind("<Button>", colClick)
 
 # Create Wallpaper Preview
-def createWallpaperPreview():
+def createWallpaperPreview(id):
     previewCanvas.delete("all")
-    if(wallpaper.pattern == 'pattern 1'):   # Checks which pattern is selected
-        createPattern1(previewCanvas, wallpaper.colour)
+    print("col: " + order[id].colour + ", pat: " + order[id].pattern + ",id: " + str(id))
+    if(order[id].pattern == 'pattern 1'):   # Checks which pattern is selected
+        createPattern1(previewCanvas, order[id].colour)
     else:
-        createPattern2(previewCanvas, wallpaper.colour)
+        createPattern2(previewCanvas, order[id].colour)
         
 # Create Options
 def createOptions():
-    global premium, lining, paste, lblPrice
+    global premium, lining, paste, lblPrice, cmbOrders
     premium = tk.IntVar()
     lining = tk.IntVar()
     paste = tk.IntVar()
@@ -172,60 +174,93 @@ def createOptions():
     
     lblPrice = tk.Label(frame, text='£0.00') # create label for price
     lblPrice.grid(row=6, column=1, padx=10, pady=1)
+    
+    orderFrame = tk.Frame(root, name='order frame')    # initialise frame for order
+    orderFrame.grid(row=2, column=0, padx=10, pady=10)
+    
+    cmbOrders = ttk.Combobox(orderFrame, name='orders', width=20, text='1', values=[1], state='readonly')    # create combobox for orders
+    cmbOrders.grid(row=0, column=0, padx=10, pady=10)
+    cmbOrders.current(0)
+    cmbOrders.bind("<<ComboboxSelected>>", optChange)
+    
+    btnAddOrder = tk.Button(orderFrame, text='Add Order', command=addOrder)    # create button for add order
+    btnAddOrder.grid(row=0, column=1, padx=10, pady=10)
 
 # Calculate Wallpaper Price
 def calculate():
-    lblPrice.config(text='£' + str(wallpaper.calculate()))    # set price label to price
+    lblPrice.config(text='£' + str(order[orderID].calculate()))    # set price label to price
+
+def addOrder():
+    global orderID
+    order.append(Wallpaper('pattern 1', 'gold', 10, 'None', False, False, False))
+    orderID = order[len(order) - 1].orderID
+    orders = []
+    for i in range(len(order)):
+        orders.append(i+1)
+    cmbOrders.config(values=orders)
+    cmbOrders.current(orderID)
+    createWallpaperPreview(orderID)
 
 # Options Change Event handler
 
 def optChange(event):
+    global orderID
     if(event.widget._name == 'length'):
-        wallpaper.length = event.widget.get()   # get length from entry
-        print(wallpaper.length)
+        order[orderID].length = event.widget.get()   # get length from entry
+        print(order[orderID].length)
         
     elif(event.widget._name == 'extras'):
-        wallpaper.extras = event.widget.get()   # get extras from combobox
-        print(wallpaper.extras)
+        order[orderID].extras = event.widget.get()   # get extras from combobox
+        print(order[orderID].extras)
         
     elif(event.widget._name == 'premium'):
         if(premium.get() == 0): # get premium from checkbox
-            wallpaper.premium = True
+            order[orderID].premium = True
         else:
-            wallpaper.premium = False
-        print("premium: " + str(wallpaper.premium))
+            order[orderID].premium = False
+        print("premium: " + str(order[orderID].premium))
         
     elif(event.widget._name == 'lining'):
         if(lining.get() == 0):  # get lining from checkbox
-            wallpaper.lining = True
+            order[orderID].lining = True
         else:
-            wallpaper.lining = False
-        print("lining: " + str(wallpaper.lining))
+            order[orderID].lining = False
+        print("lining: " + str(order[orderID].lining))
         
     elif(event.widget._name == 'paste'):
         if(paste.get() == 0):   # get paste from checkbox
-            wallpaper.paste = True
+            order[orderID].paste = True
         else:
-            wallpaper.paste = False
-        print("paste: " + str(wallpaper.paste))
+            order[orderID].paste = False
+        print("paste: " + str(order[orderID].paste))
+    
+    elif(event.widget._name == 'orders'):
+        print("order: " + event.widget.get())
+        orderID = int(event.widget.get()) - 1
+        createWallpaperPreview(orderID)
 
 # Pattern Click Event handler    
 def patClick(event):
+    global orderID
     print(event.widget._name + " clicked")
-    wallpaper.pattern = event.widget._name
-    createWallpaperPreview()
+    order[orderID].pattern = event.widget._name
+    createWallpaperPreview(orderID)
    
 # Colour Click Event handler 
 def colClick(event):
+    global orderID
     print(event.widget._name + " clicked")
-    wallpaper.colour = event.widget._name
-    createWallpaperPreview()
-    
-wallpaper = Wallpaper('pattern 1', 'gold', 10, 'None', False, False, False)
+    order[orderID].colour = event.widget._name
+    createWallpaperPreview(orderID)
+
+orderID = 0
+order = []
+order.append(Wallpaper('pattern 1', 'gold', 0, 'None', False, False, False))
 
 createCanvas()
 createColourPicker()
 createOptions()
+createWallpaperPreview(orderID)
 
 root.mainloop()
 
